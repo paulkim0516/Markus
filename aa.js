@@ -342,6 +342,7 @@ window.onload = function (){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         updateWind();
         drawMountain();
+        drawHorizon();
         drawColonies();
         requestAnimationFrame(update);
     }
