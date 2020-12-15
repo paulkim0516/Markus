@@ -1,64 +1,68 @@
-//variables and constants related to grass drawing
-var controlPtCount =  10;
-var intervalY = 5;
-var width = 1;
-
-var colonyArr = [];
-var numColony = 30;
-
-const minA = 1.09;
-const maxA = 1.18;
-const minB = 1;
-const maxB = 1.8;
-const minC = -5;
-const maxC = 5;
-const minHeight = 5;
-const maxHeight = 50;
-const minWidth = 1;
-const maxWidth = 3;
-
-const horizontalMargin = 20;
-const verticalMargin = 20;
-
-const minLeaves = 4;
-const maxLeaves = 8;
-
-const leafDirRight = 1;
-const leafDirLeft = -1;
-
-var horizonRelativePos = 0.5;
-
 window.onload = function (){
-    
-    /*
+    //setting up canvas and context
     video = document.getElementById("video");
-    videoCanvas = document.getElementById("video-container")
+    videoCanvas = document.getElementById("video-container");
     const ctxVideo = videoCanvas.getContext("2d");
     videoCanvas.width = innerWidth;
-    videoCanvas.height = innerHeight / 2;
-    */
+    videoCanvas.height = innerHeight;
     
     canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     canvas.width = innerWidth;
     canvas.height = innerHeight;
-    var horizonPos = canvas.height * horizonRelativePos;
 
-    const windX = -1;   // wind direction vector
-    const windY = 0;
+    //variables and constants related to grass drawing
+    var colonyArr = [];
+    const numColony = 30;
+    const minA = 1.09; // horizontal = a ** (b * vertical) + c
+    const maxA = 1.18;
+    const minB = 1;
+    const maxB = 1.8;
+    const minC = -5;
+    const maxC = 5;
+    const minWidth = 1;
+    const maxWidth = 3;
+    const leafTipWidth = 0.5;
+    const minHeight = 5;
+    const maxHeight = 50;
+    const controlPtCount =  10;
     const bendabilityMin = 5;
     const bendabilityMax = 12;
+
+    const horizontalMargin = 20; //margin for grass drawing area
+    const verticalMargin = 20;
+
+    const minLeaves = 4; //number of leaves for a colony
+    const maxLeaves = 8;
+
+    //variables and constants related to mountain and horizon drawing
+    const horizonRelPos = 0.5;
+    const horizonPos = canvas.height * horizonRelPos;
+    const mtRelHeight = 0.12 * canvas.width / 2560;
+    const mtHeight = canvas.height * mtRelHeight;
+    var mtCoordinates = [];
+    const mtLineWidth = 1;
+    const horizonLineWidth = 1;
+    const xIntv = 5;
+    const peakPosY = horizonPos - mtHeight;
+    const peakPosX = canvas.width * ((Math.random() - 0.5) * 0.25 + 0.5);
+    const mtLeftEnd = canvas.width * (Math.random() * 0.1 + 0.1);
+    const mtRightEnd = canvas.width - canvas.width * (Math.random() * 0.1 + 0.1);
+    const mtLeftSlope = Math.atan(mtHeight / (mtLeftEnd - peakPosX));
+    const mtRightSlope = Math.atan(mtHeight / (peakPosX - mtRightEnd));
+    const slopeVariabilityConstant = 1.2; // higher means less dynamic mountain slope
+    const degreeDiff = 30; // max difference between current pos slope and peak-to-end slope. exceeding this will lead to moderating the slope closer to peak-to-end slope.
+    const angleDiff = Math.PI * degreeDiff / 180; //degree to radius
+
+    //wind calculation
+    const windX = -1;   // wind direction vector
+    const windY = 0;
     const windAdjustConst = 5;
     const bendability = 8; // greater than 1. The bigger this number the more the thin branches will bend first
-
-    // the canvas height you are scaling up or down to a different sized canvas
-    const windStrength = 0.01 * bendability * ((200 ** 2) / (canvas.height ** 2));  // wind strength
-
+    const windStrength = 0.01 * bendability / 36;  // wind strength
     const windBendRectSpeed = 0.01;  // how fast the tree reacts to the wing
     const windBranchSpring = 0.98;   // the amount and speed of the branch spring back
-
     const gustProbability = 1/100; // how often there is a gust of wind
-
     var windCycle = 0;
     var windCycleGust = 0;
     var windCycleGustTime = 0;
@@ -67,46 +71,32 @@ window.onload = function (){
     var windActual = 0;
 
     //mountain drawing
-    var mountainCoordinates = [];
     function initializeMountain(){
-        //
-        //ctx.globalCompositeOperation = "destination-out";
-        var xInterval = 5;
-        var offsetVal = 300;
-        var mountainRelativeHeight = 0.12 * canvas.width / 2560;
-        var startingPosY = canvas.height * (horizonRelativePos - mountainRelativeHeight);
-        var startingPosX = canvas.width * ((Math.random() - 0.5) * 0.25 + 0.5);
-        var leftEnd = canvas.width * (Math.random() * 0.1 + 0.1);
-        var rightEnd = canvas.width - canvas.width * (Math.random() * 0.1 + 0.1);
-        var leftAngle = Math.atan(canvas.height * mountainRelativeHeight / (leftEnd - startingPosX));
-        var rightAngle = Math.atan(canvas.height * mountainRelativeHeight / (startingPosX - rightEnd));
         var angle = 0;
         
         //mountain with a peak as starting point
-        var actualPosY = startingPosY;
+        var currentPosY = peakPosY;
         angle = 0;
-        var divider = 1.2;
-        var degreeDiff = 30;
-        var angleDiff = Math.PI * degreeDiff / 180;
+
         //left slope
-        for (var actualPosX = startingPosX; actualPosX > - xInterval; actualPosX -= xInterval) {
+        for (var currentPosX = peakPosX; currentPosX > - xIntv; currentPosX -= xIntv) {
             var coordinate = new Object();
-            if(actualPosY < horizonRelativePos * canvas.height) {
-                coordinate.x = actualPosX;
-                coordinate.y = actualPosY;
+            if(currentPosY < horizonPos) {
+                coordinate.x = currentPosX;
+                coordinate.y = currentPosY;
             } else {
-                coordinate.x = actualPosX;
-                coordinate.y = horizonRelativePos * canvas.height;
-                mountainCoordinates.unshift(coordinate);
+                coordinate.x = currentPosX;
+                coordinate.y = horizonPos;
+                mtCoordinates.unshift(coordinate);
                 break;
             }
 
-            if (angle > leftAngle + angleDiff) {
-                angle -= Math.random() / divider;
-            } else if (angle < leftAngle - angleDiff) {
-                angle += Math.random() / divider;
+            if (angle > mtLeftSlope + angleDiff) {
+                angle -= Math.random() / slopeVariabilityConstant;
+            } else if (angle < mtLeftSlope - angleDiff) {
+                angle += Math.random() / slopeVariabilityConstant;
             } else {
-                angle += Math.random() / divider - 0.5 / divider;
+                angle += Math.random() / slopeVariabilityConstant - 0.5 / slopeVariabilityConstant;
             }
 
             if (angle > Math.PI / 2) {
@@ -117,23 +107,23 @@ window.onload = function (){
                 angle = -Math.PI / 2;
             }
 
-            actualPosY = actualPosY - Math.tan(angle) * xInterval;
+            currentPosY = currentPosY - Math.tan(angle) * xIntv;
 
-            mountainCoordinates.unshift(coordinate);
+            mtCoordinates.unshift(coordinate);
         }
 
         //right slope
-        actualPosY = canvas.height * (horizonRelativePos - mountainRelativeHeight);
+        currentPosY = horizonPos - mtHeight;
         angle = 0;
-        for (var actualPosX = startingPosX; actualPosX < canvas.width + xInterval; actualPosX += xInterval) {
+        for (var currentPosX = peakPosX; currentPosX < canvas.width + xIntv; currentPosX += xIntv) {
             var coordinate = new Object();
-            if(actualPosY < horizonRelativePos * canvas.height) {
-                coordinate.x = actualPosX;
-                coordinate.y = actualPosY;
+            if(currentPosY < horizonPos) {
+                coordinate.x = currentPosX;
+                coordinate.y = currentPosY;
             } else {
-                coordinate.x = actualPosX;
-                coordinate.y = horizonRelativePos * canvas.height;
-                mountainCoordinates.push(coordinate);
+                coordinate.x = currentPosX;
+                coordinate.y = horizonPos;
+                mtCoordinates.push(coordinate);
                 break;
             }
 
@@ -145,56 +135,52 @@ window.onload = function (){
                 angle = -Math.PI / 2;
             }
 
-            if (angle > rightAngle + angleDiff) {
-                angle -= Math.random() / divider;
-            } else if (angle < rightAngle - angleDiff) {
-                angle += Math.random() / divider;
+            if (angle > mtRightSlope + angleDiff) {
+                angle -= Math.random() / slopeVariabilityConstant;
+            } else if (angle < mtRightSlope - angleDiff) {
+                angle += Math.random() / slopeVariabilityConstant;
             } else {
-                angle += Math.random() / divider - 0.5 / divider;
+                angle += Math.random() / slopeVariabilityConstant - 0.5 / slopeVariabilityConstant;
             }
 
-            actualPosY = actualPosY - Math.tan(angle) * xInterval;
+            currentPosY = currentPosY - Math.tan(angle) * xIntv;
             
-            mountainCoordinates.push(coordinate);
+            mtCoordinates.push(coordinate);
         }
 
-        if (mountainCoordinates[0].x <= xInterval && mountainCoordinates[0].y < horizonRelativePos * canvas.height) {
+        if (mtCoordinates[0].x <= xIntv && mtCoordinates[0].y < horizonPos) {
             var coordinate = new Object();
             coordinate.x = 0;
-            coordinate.y = horizonRelativePos * canvas.height;
-            mountainCoordinates.unshift(coordinate);
+            coordinate.y = horizonPos;
+            mtCoordinates.unshift(coordinate);
         }
 
-        if (mountainCoordinates[mountainCoordinates.length -1].x >= canvas.width - xInterval 
-            && mountainCoordinates[mountainCoordinates.length -1].y <horizonRelativePos * canvas.height) {
+        if (mtCoordinates[mtCoordinates.length -1].x >= canvas.width - xIntv 
+            && mtCoordinates[mtCoordinates.length -1].y < horizonPos) {
             var coordinate = new Object();
             coordinate.x = canvas.width;
-            coordinate.y = horizonRelativePos * canvas.height;
-            mountainCoordinates.push(coordinate);
+            coordinate.y = horizonPos;
+            mtCoordinates.push(coordinate);
         }
 
         drawMountain();
-        
+        drawHorizon();
     }
 
     function drawMountain(){
         ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.moveTo(mountainCoordinates[0].x, mountainCoordinates[0].y);
-        for (var i = 0; i < mountainCoordinates.length; i++) {
-            var coordinate = mountainCoordinates[i];
-            ctx.lineTo(coordinate.x, coordinate.y);
+        ctx.lineWidth = mtLineWidth;
+        ctx.moveTo(mtCoordinates[0].x, mtCoordinates[0].y);
+        for (var i = 0; i < mtCoordinates.length; i++) {
+            ctx.lineTo(mtCoordinates[i].x, mtCoordinates[i].y);
         }
         
         ctx.stroke();
-        drawHorizon();
     }
 
     function drawHorizon() {
-        ctx.lineWidth = 1;
+        ctx.lineWidth = horizonLineWidth;
         ctx.beginPath();
-        //
-        //ctx.globalCompositeOperation = "destination-out";
         ctx.moveTo(0, horizonPos);
         ctx.lineTo(canvas.width, horizonPos);
         ctx.stroke();
@@ -205,19 +191,18 @@ window.onload = function (){
         for(var i = 0; i < numColony; i++) {
             var newColony = new Object();
             newColony.posX = Math.random() * (canvas.width - 2 * horizontalMargin) + horizontalMargin;
-            newColony.posY = canvas.height * horizonRelativePos + Math.random() 
-                * (canvas.height * (1 - horizonRelativePos) - 2 * verticalMargin) + verticalMargin;
+            newColony.posY = horizonPos + Math.random() * (canvas.height - horizonPos - 2 * verticalMargin) + verticalMargin;
             numLeaves = Math.random() * (maxLeaves - minLeaves) + minLeaves;
             var newLeaves = [];
             for(var j = 0; j < numLeaves; j++) {
                 var leaf = {
+                    a: Math.random() * (maxA - minA) + minA,
+                    b: Math.random() * (maxB - minB) + minB,
                     c: Math.random() * (maxC - minC) + minC,
                     width: Math.random() * (maxWidth - minWidth) + minWidth,
                     height: Math.random() * (maxHeight - minHeight) + minHeight,
-                    a: Math.random() * (maxA - minA) + minA,
-                    b: Math.random() * (maxB - minB) + minB,
-                    numCtrPt: 20,
-                    direction: Math.random() > 0.5? leafDirLeft : leafDirRight,
+                    numCtrPt: controlPtCount,
+                    direction: Math.random() > 0.5? -1 : 1,
                     bend: Math.random() * (bendabilityMax - bendabilityMin) + bendabilityMin
                 };
 
@@ -243,32 +228,28 @@ window.onload = function (){
     }
 
     function drawGrass(colony) {
-        var posX = colony.posX;
-        var posY = colony.posY;
         for(var i = 0; i < colony.leaves.length; i++) {
             var thisLeaf = colony.leaves[i];
+            var ctrPt = thisLeaf.numCtrPt;
             var a = thisLeaf.a;
             var b = thisLeaf.b;
             var c = thisLeaf.c;
-            var incX = posX;
-            var incY = posY;
+            var incX = colony.posX;
+            var incY = colony.posY;
             var dir = 0;
-            ctx.lineWidth = thisLeaf.width;
-            ctx.beginPath();
-            //context.moveTo(posX + c, posY);
             var grassCoordinatesL = [];
             var grassCoordinatesR = [];
             var grassCoordinatesVL = [];
             var grassCoordinatesVR = [];
-            for(var j = 0; j < thisLeaf.numCtrPt; j++) {
-                dir = Math.atan(10 * b / thisLeaf.numCtrPt * a ** (b * j * 10 / thisLeaf.numCtrPt) * Math.log(a) * thisLeaf.direction);
-                var leng = thisLeaf.height / thisLeaf.numCtrPt / Math.cos(dir);
+            for(var j = 0; j < ctrPt; j++) {
+                dir = Math.atan(10 * b / ctrPt * a ** (b * j * 10 / ctrPt) * Math.log(a) * thisLeaf.direction);
+                var leng = thisLeaf.height / ctrPt / Math.cos(dir);
                 const xx = Math.sin(dir) * leng;
-                const yy = thisLeaf.height / thisLeaf.numCtrPt;
+                const yy = thisLeaf.height / ctrPt;
                 const windSideWayForce = windX * yy - windY * xx;
 
-                var lw = thisLeaf.width - j * (thisLeaf.width - 0.5) / (thisLeaf.numCtrPt);
-                ctx.lineWidth = lw;
+                var lw = thisLeaf.width - j * (thisLeaf.width - leafTipWidth) / (ctrPt);
+                //ctx.lineWidth = lw;
                 dir += windAdjustConst * (j + 1) * (windStrength * windActual) * ((0.8) ** thisLeaf.bend) * windSideWayForce;
 
                 if(dir > Math.PI/2) dir = Math.PI/2;
@@ -289,17 +270,40 @@ window.onload = function (){
             grassCoordinatesY.unshift(colony.posY);
             grassCoordinatesY.push(colony.posY);
 
+            ctxVideo.moveTo(colony.posX + c, colony.posY);
             for(var j = 0; j < grassCoordinatesX.length; j++) {
-                ctx.lineTo(grassCoordinatesX[j], grassCoordinatesY[j]);
+                ctxVideo.lineTo(grassCoordinatesX[j], grassCoordinatesY[j]);
             }
-            ctx.fill();
+            
         }
     }    
 
     function drawColonies() {
+        ctxVideo.save();
+        ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+        ctxVideo.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+        
+        ctxVideo.beginPath();
         for(var i = 0; i < colonyArr.length; i++) {
             drawGrass(colonyArr[i]);
         }
+        ctxVideo.globalCompositeOperation = "destination-in";
+        ctxVideo.fill();
+        
+        ctxVideo.restore();
+
+        ctx.drawImage(videoCanvas, 0, 0, canvas.width, canvas.height);
+
+        //code to display colonies on top of the video. delete at release
+        ctxVideo.save();
+        ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+        ctxVideo.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+        ctxVideo.beginPath();
+        for(var i = 0; i < colonyArr.length; i++) {
+            drawGrass(colonyArr[i]);
+        }
+        ctxVideo.fill();
+        ctxVideo.restore();
     }
     
     initializeMountain();
@@ -327,6 +331,8 @@ window.onload = function (){
     window.addEventListener("resize", function(){
         canvas.width = innerWidth;
         canvas.height = innerHeight;
+        videoCanvas.width = innerWidth;
+        videoCanvas.height = innerHeight;
         update();
     });
 
@@ -335,12 +341,8 @@ window.onload = function (){
     function update() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
         updateWind();
-        drawColonies();
         drawMountain();
-        
+        drawColonies();
         requestAnimationFrame(update);
     }
 }
-
-
-
