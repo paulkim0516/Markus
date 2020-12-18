@@ -3,8 +3,24 @@
     <head>
         <title>Markus Hustle</title>
         <script src="aa.js"></script>
+        <style>
+            body {
+                text-align: center;
+                margin: 0px;
+                position: fixed;
+            }
+            .hidden {
+                display: none; /* change to 'none' at release */
+            }
+            .asdf {
+                display: block;
+            }
+        </style>
     </head>
-    <body style="text-align: center; margin: 0px; position:fixed">
-        <canvas id="canvas" style="z-index: 2; position: absolute;"></canvas>
+    <body>
+        <canvas id="canvas"></canvas>
+        <canvas id="video-container" class="hidden"></canvas>
+        <video id="video-grass" class="hidden" src="sample_grass.mp4" loop muted></video>
+        <video id="video-sky" class="hidden" src="sample_sky.mp4" loop muted></video>
     </body>
 </html>
