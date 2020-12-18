@@ -1,6 +1,9 @@
 window.onload = function (){
     //setting up canvas and context
-    video = document.getElementById("video");
+    videoGrass = document.getElementById("video-grass");
+    videoGrass.play();
+    videoSky = document.getElementById("video-sky");
+    videoSky.play();
     videoCanvas = document.getElementById("video-container");
     const ctxVideo = videoCanvas.getContext("2d");
     videoCanvas.width = innerWidth;
@@ -163,6 +166,7 @@ window.onload = function (){
             mtCoordinates.push(coordinate);
         }
 
+        fillSky();
         drawMountain();
         drawHorizon();
     }
@@ -184,6 +188,10 @@ window.onload = function (){
         ctx.moveTo(0, horizonPos);
         ctx.lineTo(canvas.width, horizonPos);
         ctx.stroke();
+    }
+    
+    function fillSky() {
+        ctx.drawImage(videoSky, 0, 0, canvas.width, horizonPos, 0, 0, canvas.width, horizonPos);
     }
 
     //grass drawing
@@ -281,7 +289,7 @@ window.onload = function (){
     function drawColonies() {
         ctxVideo.save();
         ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
-        ctxVideo.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+        ctxVideo.drawImage(videoGrass, 0, 0, videoCanvas.width, videoCanvas.height);
         
         ctxVideo.beginPath();
         for(var i = 0; i < colonyArr.length; i++) {
@@ -289,20 +297,7 @@ window.onload = function (){
         }
         ctxVideo.globalCompositeOperation = "destination-in";
         ctxVideo.fill();
-        
-        ctxVideo.restore();
-
         ctx.drawImage(videoCanvas, 0, 0, canvas.width, canvas.height);
-
-        //code to display colonies on top of the video. delete at release
-        ctxVideo.save();
-        ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
-        ctxVideo.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
-        ctxVideo.beginPath();
-        for(var i = 0; i < colonyArr.length; i++) {
-            drawGrass(colonyArr[i]);
-        }
-        ctxVideo.fill();
         ctxVideo.restore();
     }
     
