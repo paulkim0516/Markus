@@ -7,16 +7,20 @@
             body {
                 text-align: center;
                 margin: 0px;
-                position: inherit;
+                position: fixed;
             }
             .hidden {
-                display: block; /* change to 'none' at release */
+                display: none; /* change to 'none' at release */
+            }
+            .asdf {
+                display: block;
             }
         </style>
     </head>
     <body>
         <canvas id="canvas"></canvas>
         <canvas id="video-container" class="hidden"></canvas>
-        <video id="video" class="hidden" src="sample.mp4" autoplay loop muted></video>
+        <video id="video-grass" class="hidden" src="sample_grass.mp4" loop muted></video>
+        <video id="video-sky" class="hidden" src="sample_sky.mp4" loop muted></video>
     </body>
 </html>
