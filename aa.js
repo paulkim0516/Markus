@@ -191,7 +191,7 @@ window.onload = function (){
     }
     
     function fillSky() {
-        ctx.drawImage(videoSky, 0, 0, canvas.width, horizonPos, 0, 0, canvas.width, horizonPos);
+        ctx.drawImage(videoSky, 0, 0, videoSky.videoWidth, horizonPos * videoSky.videoWidth / canvas.width, 0, 0, canvas.width, horizonPos);
     }
 
     //grass drawing
