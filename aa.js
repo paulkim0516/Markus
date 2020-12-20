@@ -179,6 +179,7 @@ window.onload = function (){
             ctx.lineTo(mtCoordinates[i].x, mtCoordinates[i].y);
         }
         ctx.fillStyle = "white";
+        ctx.fill();
     }
 
     function drawHorizon() {
