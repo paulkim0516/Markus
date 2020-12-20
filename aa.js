@@ -178,8 +178,7 @@ window.onload = function (){
         for (var i = 0; i < mtCoordinates.length; i++) {
             ctx.lineTo(mtCoordinates[i].x, mtCoordinates[i].y);
         }
-        
-        ctx.stroke();
+        ctx.fillStyle = "white";
     }
 
     function drawHorizon() {
@@ -336,6 +335,7 @@ window.onload = function (){
     function update() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
         updateWind();
+        fillSky();
         drawMountain();
         drawHorizon();
         drawColonies();
