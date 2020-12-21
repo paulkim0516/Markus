@@ -4,6 +4,10 @@ window.onload = function (){
     videoGrass.play();
     videoSky = document.getElementById("video-sky");
     videoSky.play();
+    videoGround = document.getElementById("video-ground");
+    videoGround.play();
+    videoMountain = document.getElementById("video-mountain");
+    videoMountain.play();
     videoCanvas = document.getElementById("video-container");
     const ctxVideo = videoCanvas.getContext("2d");
     videoCanvas.width = innerWidth;
@@ -28,7 +32,7 @@ window.onload = function (){
     const leafTipWidth = 0.5;
     const minHeight = 5;
     const maxHeight = 50;
-    const controlPtCount =  10;
+    const controlPtCount =  20;
     const bendabilityMin = 5;
     const bendabilityMax = 12;
 
@@ -172,14 +176,31 @@ window.onload = function (){
     }
 
     function drawMountain(){
+        ctxVideo.save();
+        ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+        ctxVideo.drawImage(videoMountain, 0, 0, videoMountain.videoWidth, videoMountain.videoHeight, 0, -500, videoMountain.videoWidth, videoMountain.videoHeight);
+        //ctxVideo.drawImage(videoMountain, 0, 0, videoMountain.videoWidth, videoMountain.videoHeight, 0, -500, canvas.width, videoMountain.videoHeight / videoMountain.videoWidth * canvas.width);
+        
+
+        ctxVideo.lineWidth = 1;
+        ctxVideo.beginPath();
+        ctxVideo.lineWidth = mtLineWidth;
+        ctxVideo.moveTo(mtCoordinates[0].x, mtCoordinates[0].y);
+        for (var i = 0; i < mtCoordinates.length; i++) {
+            ctxVideo.lineTo(mtCoordinates[i].x, mtCoordinates[i].y);
+        }
+        ctxVideo.globalCompositeOperation = "destination-in";
+        ctxVideo.fill();
+        ctx.drawImage(videoCanvas, 0, 0, canvas.width, canvas.height);
+        ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+        ctxVideo.restore();
+
         ctx.beginPath();
-        ctx.lineWidth = mtLineWidth;
         ctx.moveTo(mtCoordinates[0].x, mtCoordinates[0].y);
         for (var i = 0; i < mtCoordinates.length; i++) {
             ctx.lineTo(mtCoordinates[i].x, mtCoordinates[i].y);
         }
-        ctx.fillStyle = "white";
-        ctx.fill();
+        ctx.stroke();
     }
 
     function drawHorizon() {
@@ -189,9 +210,10 @@ window.onload = function (){
         ctx.lineTo(canvas.width, horizonPos);
         ctx.stroke();
     }
-    
+
     function fillSky() {
-        ctx.drawImage(videoSky, 0, 0, videoSky.videoWidth, horizonPos * videoSky.videoWidth / canvas.width, 0, 0, canvas.width, horizonPos);
+        ctx.drawImage(videoSky, 0, 0, videoSky.videoWidth, horizonRelPos * videoSky.videoHeight, 0, 0, videoSky.videoWidth, horizonRelPos * videoSky.videoHeight);
+        //ctx.drawImage(videoSky, 0, 0, videoSky.videoWidth, horizonPos * videoSky.videoHeight / canvas.height, 0, 0, canvas.width, horizonPos);
     }
 
     //grass drawing
@@ -225,14 +247,20 @@ window.onload = function (){
                 leaf.length = le-ls;
                 console.log(leaf.length);
                 */
-               
+            
                 newLeaves.push(leaf);
             }
             newColony.leaves = newLeaves;
             colonyArr.push(newColony);
         }
     
+        drawGround();
         drawColonies();
+    }
+
+    function drawGround() {
+        ctx.drawImage(videoGround, 0, horizonRelPos * videoGround.videoHeight, videoGround.videoWidth, videoGround.videoHeight * (1 - horizonRelPos), 0, horizonPos, videoGround.videoWidth, videoGround.videoHeight * (1 - horizonRelPos));
+        //ctx.drawImage(videoGround, 0, horizonRelPos * videoGround.videoHeight, videoGround.videoWidth, videoGround.videoHeight * (1 - horizonRelPos), 0, horizonPos, canvas.width, videoGround.videoHeight * (1 - horizonRelPos) / videoGround.videoWidth * canvas.width);
     }
 
     function drawGrass(colony) {
@@ -284,12 +312,13 @@ window.onload = function (){
             }
             
         }
-    }    
+    }
 
     function drawColonies() {
         ctxVideo.save();
         ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
-        ctxVideo.drawImage(videoGrass, 0, 0, videoCanvas.width, videoCanvas.height);
+        ctxVideo.drawImage(videoGrass, 0, 0, videoGrass.videoWidth, videoGrass.videoHeight, 0, 0, videoGrass.videoWidth, videoGrass.videoHeight);
+        //ctxVideo.drawImage(videoGrass, 0, 0, videoGrass.videoWidth, videoGrass.videoHeight, 0, 0, canvas.width, videoGrass.videoHeight / videoGrass.videoWidth * canvas.width);
         
         ctxVideo.beginPath();
         for(var i = 0; i < colonyArr.length; i++) {
@@ -297,7 +326,9 @@ window.onload = function (){
         }
         ctxVideo.globalCompositeOperation = "destination-in";
         ctxVideo.fill();
+
         ctx.drawImage(videoCanvas, 0, 0, canvas.width, canvas.height);
+        ctxVideo.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
         ctxVideo.restore();
     }
     
@@ -323,23 +354,16 @@ window.onload = function (){
 
     }
 
-    window.addEventListener("resize", function(){
-        canvas.width = innerWidth;
-        canvas.height = innerHeight;
-        videoCanvas.width = innerWidth;
-        videoCanvas.height = innerHeight;
-        update();
-    });
-
-    requestAnimationFrame(update);
+    update();
 
     function update() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
         updateWind();
         fillSky();
         drawMountain();
-        drawHorizon();
+        drawGround();
         drawColonies();
+        drawHorizon();
         requestAnimationFrame(update);
     }
 }
