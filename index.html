@@ -1,28 +1,19 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Markus Hustle</title>
-        <script src="aa.js"></script>
-        <style>
-            body {
-                text-align: center;
-                margin: 0px;
-                position: fixed;
-            }
-            .hidden {
-                display: none; /* change to 'none' at release */
-            }
-            .asdf {
-                display: block;
-            }
-        </style>
-    </head>
-    <body>
+<head>
+    <link rel="shortcut icon" href="image/favicon.png"/>
+    <title>Markus Hustle</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div id="to-gallery" class="overlay-control" onclick="location.href='https://github.com/paulkim0516/paulkim0516.github.io'"></div>
+    <div id="intro" class="artwork">
         <canvas id="canvas"></canvas>
         <canvas id="video-container" class="hidden"></canvas>
         <video id="video-grass" class="hidden" src="sample_grass.mp4" loop muted></video>
         <video id="video-sky" class="hidden" src="sample_sky.mp4" loop muted></video>
         <video id="video-ground" class="hidden" src="sample_ground.mp4" loop muted></video>
         <video id="video-mountain" class="hidden" src="sample_mountain.mp4" loop muted></video>
-    </body>
-</html>
+        <script src="aaa.js"></script>
+    </div>
+</body>
