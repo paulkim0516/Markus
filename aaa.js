@@ -62,13 +62,13 @@ function videoArtwork(){
     const maxWidth = 8;
     const leafTipWidth = 0.5;
     const minHeight = 20;
-    const maxHeight = 80;
+    const maxHeight = 160;
     const controlPtCount =  20;
     const bendabilityMin = 5;
     const bendabilityMax = 12;
 
     const horizontalMargin = 20; //margin for grass drawing area
-    const verticalMargin = 20;
+    const verticalMargin = 5;
 
     const minLeaves = 4; //number of leaves for a colony
     const maxLeaves = 8;
@@ -201,7 +201,7 @@ function videoArtwork(){
         }
 
         fillSky();
-        drawMountain();
+        //drawMountain();
         drawHorizon();
     }
 
@@ -388,7 +388,7 @@ function videoArtwork(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         updateWind();
         fillSky();
-        drawMountain();
+        //drawMountain();
         drawGround();
         drawHorizon();
         drawColonies();
